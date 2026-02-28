@@ -41,7 +41,8 @@ NODES=(
     "https://github.com/kijai/ComfyUI-KJNodes"
     "https://github.com/kijai/ComfyUI-MelBandRoFormer"
     "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
-    "https://github.com/scofano/comfy-audio-duration"
+    "https://github.com/ZhiHui6/zhihui_nodes_comfyui"
+    "https://github.com/LAOGOU-666/Comfyui-Memory_Cleanup"
 )
 
 for repo in "${NODES[@]}"; do
