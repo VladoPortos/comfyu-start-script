@@ -13,6 +13,16 @@ COMFYUI_DIR="/workspace/ComfyUI"
 MODELS_DIR="$COMFYUI_DIR/models"
 CUSTOM_NODES_DIR="$COMFYUI_DIR/custom_nodes"
 
+# Use the venv pip if available (Vast.ai ComfyUI templates use /venv/main/)
+if [ -f "/venv/main/bin/pip" ]; then
+    PIP="/venv/main/bin/pip"
+elif [ -f "$COMFYUI_DIR/venv/bin/pip" ]; then
+    PIP="$COMFYUI_DIR/venv/bin/pip"
+else
+    PIP="pip"
+fi
+echo "Using pip: $PIP"
+
 echo "========================================"
 echo "AI-Flow: Starting provisioning..."
 echo "========================================"
@@ -30,7 +40,8 @@ install_node() {
         echo "[INSTALL] $dir_name ..."
         git clone "$repo_url" "$CUSTOM_NODES_DIR/$dir_name"
         if [ -f "$CUSTOM_NODES_DIR/$dir_name/requirements.txt" ]; then
-            pip install -r "$CUSTOM_NODES_DIR/$dir_name/requirements.txt"
+            echo "[DEPS] Installing requirements for $dir_name ..."
+            $PIP install -r "$CUSTOM_NODES_DIR/$dir_name/requirements.txt" 2>&1 | tail -5
         fi
         echo "[DONE] $dir_name"
     fi
