@@ -1,6 +1,7 @@
 #!/bin/bash
 # AI-Flow ComfyUI Provisioning Script
-# Downloads required models for InfiniteTalk, Wan 2.1, and video generation workflows.
+# Installs custom nodes and downloads required models for InfiniteTalk, Wan 2.1,
+# and video generation workflows.
 # Designed to be used as PROVISIONING_SCRIPT env var with the Vast.ai ComfyUI template.
 #
 # Usage: Set PROVISIONING_SCRIPT=<raw_url_to_this_file> in instance env vars.
@@ -8,11 +9,44 @@
 
 set -e
 
-MODELS_DIR="/workspace/ComfyUI/models"
+COMFYUI_DIR="/workspace/ComfyUI"
+MODELS_DIR="$COMFYUI_DIR/models"
+CUSTOM_NODES_DIR="$COMFYUI_DIR/custom_nodes"
 
 echo "========================================"
-echo "AI-Flow: Starting model provisioning..."
+echo "AI-Flow: Starting provisioning..."
 echo "========================================"
+
+# ---- Custom Nodes ----
+echo "--- Installing Custom Nodes ---"
+
+install_node() {
+    local repo_url="$1"
+    local dir_name
+    dir_name=$(basename "$repo_url" .git)
+    if [ -d "$CUSTOM_NODES_DIR/$dir_name" ]; then
+        echo "[SKIP] $dir_name already installed"
+    else
+        echo "[INSTALL] $dir_name ..."
+        git clone "$repo_url" "$CUSTOM_NODES_DIR/$dir_name"
+        if [ -f "$CUSTOM_NODES_DIR/$dir_name/requirements.txt" ]; then
+            pip install -r "$CUSTOM_NODES_DIR/$dir_name/requirements.txt"
+        fi
+        echo "[DONE] $dir_name"
+    fi
+}
+
+# WanVideo wrapper (InfiniteTalk, MultiTalk, Wav2Vec nodes)
+install_node "https://github.com/kijai/ComfyUI-WanVideoWrapper.git"
+
+# KJNodes (FloatConstant, ImageResizeKJ, INTConstant, SimpleCalculator, etc.)
+install_node "https://github.com/kijai/ComfyUI-KJNodes.git"
+
+# MelBandRoFormer (audio source separation for InfiniteTalk)
+install_node "https://github.com/kijai/ComfyUI-MelBandRoFormer.git"
+
+# VideoHelperSuite (VHS_VideoCombine for video output)
+install_node "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
 
 # Create target directories
 mkdir -p "$MODELS_DIR/diffusion_models" \
